@@ -20,7 +20,8 @@ class _LoginState extends State<Login> {
     try {
       UserCredential user = await _auth.signInWithEmailAndPassword(
           email: _email!, password: _password!);
-      Navigator.pushReplacementNamed(context, '/home');
+      String route = '/home${isStudent ? '/student' : '/tutor'}';
+      Navigator.pushReplacementNamed(context, route);
     } catch (e) {
       setState(() {
         error = "Incorrect email/password";

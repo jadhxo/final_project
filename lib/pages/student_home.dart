@@ -1,16 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class Home extends StatefulWidget {
-  const Home({super.key});
+class StudentHome extends StatefulWidget {
+  const StudentHome({super.key});
 
   @override
-  State<Home> createState() => _State();
+  State<StudentHome> createState() => _StudentHomeState();
 }
 
-class _State extends State<Home> {
+class _StudentHomeState extends State<StudentHome> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   signOut() {
     try {
       _auth.signOut();
@@ -30,7 +29,7 @@ class _State extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Home Page!",
+          "Student Home Page!",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue,
