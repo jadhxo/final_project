@@ -1,5 +1,7 @@
 import 'dart:html';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
@@ -12,8 +14,10 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
   bool isStudent = true;
+  String error = '';
   static List<MultiSelectItem<String>> _items = [
     MultiSelectItem("math", "Mathematics"),
     MultiSelectItem("physics", "Physics"),
@@ -22,7 +26,50 @@ class _SignUpState extends State<SignUp> {
     MultiSelectItem("test", "Test")
   ];
   List<dynamic> _selectedSubjects = [];
-  String? _first_name, _last_name, _email, _password, _password_conf;
+  String? _first_name = "",
+      _last_name = "",
+      _email = "",
+      _password = "",
+      _password_conf = "";
+
+  Future signUpUser() async {
+    try {
+      if (confirmPassword()) {
+        await _auth.createUserWithEmailAndPassword(
+            email: _email!, password: _password!);
+
+        Map<String, dynamic> info = {
+          'first name': _first_name!,
+          'last_name': _last_name!,
+          'email': _email!
+        };
+        if (!isStudent) {
+          info.addAll({'role': 'tutor', 'subjects': _selectedSubjects});
+        } else {
+          info.addAll({'role': 'student'});
+        }
+        await FirebaseFirestore.instance.collection('users').add(info);
+      }
+    } catch (e) {
+      setState(() {
+        error = "Failed to register user.";
+      });
+    }
+  }
+
+  bool confirmPassword() {
+    if (_password!.trim() != _password_conf!.trim()) {
+      setState(() {
+        error = "Passwords do not match!";
+      });
+      return false;
+    }
+    setState(() {
+      error = '';
+    });
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -252,11 +299,7 @@ class _SignUpState extends State<SignUp> {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
                                 // TODO implement signUp
-                                print("First Name: $_first_name");
-                                print("Last Name: $_last_name");
-                                print("Email: $_email");
-                                print("Password: $_password");
-                                print("Subjects: $_selectedSubjects");
+                                signUpUser();
                               }
                             },
                             child: const Text(
@@ -264,6 +307,10 @@ class _SignUpState extends State<SignUp> {
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
+                          Text(
+                            error,
+                            style: TextStyle(color: Colors.red, fontSize: 14),
+                          )
                         ],
                       )),
                 ),

@@ -1,3 +1,4 @@
+import 'package:final_project/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       initialRoute: '/login',
       routes: {
+        '/home': (context) => const Home(),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp()
       });

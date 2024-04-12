@@ -1,5 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'sign_up.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -10,12 +10,32 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String error = "";
   String? _email, _password;
   bool _keepLoggedIn = false;
-  bool isStudent = true; // Initial value for toggle
+  bool isStudent = true;
+
+  Future login() async {
+    try {
+      UserCredential user = await _auth.signInWithEmailAndPassword(
+          email: _email!, password: _password!);
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      setState(() {
+        error = "Incorrect email/password";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_auth.currentUser != null) {
+      print("Already signed in.");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    }
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
@@ -154,7 +174,7 @@ class _LoginState extends State<Login> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
-                            // Perform login logic here
+                            login();
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -165,6 +185,7 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                     ),
+                    Center(child: Text(error, style: TextStyle(color: Colors.red),)),
                     const SizedBox(height: 20.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

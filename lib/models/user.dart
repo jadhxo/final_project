@@ -1,5 +1,5 @@
 class User {
-  String? firstName, lastName, email, password;
+  String? firstName, lastName, email;
   bool? isTutor;
   List<String>? subjects;
 
@@ -7,7 +7,6 @@ class User {
       {this.firstName,
       this.lastName,
       this.email,
-      this.password,
       this.isTutor,
       this.subjects});
 
