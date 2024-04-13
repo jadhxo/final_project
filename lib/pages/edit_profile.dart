@@ -144,7 +144,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                MultiSelectDialogField(
+                if (widget.user['role'] == 'tutor') MultiSelectDialogField(
                   items: _items,
                   initialValue: _selectedSubjects,
                   title: const Text("Subjects"),
