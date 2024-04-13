@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:final_project/pages/AuthService.dart';
 import 'package:flutter/material.dart';
 
-class TutorProfile extends StatefulWidget {
+class Profile extends StatefulWidget {
   final String userId, docId;
-  TutorProfile({Key? key, required this.userId, required this.docId}) : super(key: key);
+  Profile({Key? key, required this.userId, required this.docId}) : super(key: key);
 
   @override
-  State<TutorProfile> createState() => _TutorProfileState();
+  State<Profile> createState() => _ProfileState();
 }
 
 
-class _TutorProfileState extends State<TutorProfile> {
+class _ProfileState extends State<Profile> {
 
   String subjects = '';
   AuthService authService = AuthService();
@@ -81,8 +81,23 @@ class _TutorProfileState extends State<TutorProfile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Subjects", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-                      Text(subjects, style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                      if (user['role'] == 'tutor') ...[
+                        const Text(
+                          "Subjects",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          subjects,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       const Text("Bio", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
                       Text("${user['bio']}", style: const TextStyle(fontSize: 16, color: Colors.black54)),

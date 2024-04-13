@@ -5,7 +5,7 @@ import 'firebase_options.dart';
 import 'pages/edit_profile.dart';
 import 'pages/student_home.dart';
 import 'pages/tutor_home.dart';
-import 'pages/tutor_profile.dart';
+import 'pages/profile.dart';
 import 'pages/login.dart';
 import 'pages/sign_up.dart';
 
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         final args = settings.arguments as Map<String, dynamic>?; // Safely handle arguments
         if (args != null && args.containsKey('userId')) {
           return MaterialPageRoute(
-            builder: (_) => TutorProfile(userId: args['userId'], docId: args['docId']),
+            builder: (_) => Profile(userId: args['userId'], docId: args['docId']),
           );
         } else {
           return MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('User ID not provided'))));

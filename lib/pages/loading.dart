@@ -30,7 +30,6 @@ class _LoadingState extends State<Loading> {
     try {
       User user = _auth.currentUser!;
       var userDocument = await authService.fetchUserByUid(user.uid);
-      print(userDocument);
       if (userDocument.isNotEmpty) {
         String role = userDocument['role'];
         String route = role == 'tutor' ? '/tutor' : '/student';

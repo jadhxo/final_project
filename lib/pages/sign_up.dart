@@ -17,6 +17,7 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
   bool isStudent = true;
   String error = '';
@@ -70,6 +71,32 @@ class _SignUpState extends State<SignUp> {
       error = '';
     });
     return true;
+  }
+
+  Future<void> fetchSubjects() async {
+    try {
+      QuerySnapshot subjectSnapshot = await _firestore.collection('subjects').get();
+      setState(() {
+        _items.clear();
+        for (var doc in subjectSnapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          String subjectName = data['display name']; // Assuming the field is named 'name'
+          _items.add(MultiSelectItem(doc.id, subjectName));
+        }
+      });
+    } catch (e) {
+      print(e);
+      setState(() {
+        error = "Failed to fetch subjects.";
+      });
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSubjects();
   }
 
   @override
