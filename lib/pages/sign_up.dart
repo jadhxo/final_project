@@ -1,6 +1,8 @@
 import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:final_project/models/user.dart';
+import 'package:final_project/pages/AuthService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,7 @@ class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
   bool isStudent = true;
   String error = '';
+  AuthService authService = AuthService();
   static List<MultiSelectItem<String>> _items = [
     MultiSelectItem("math", "Mathematics"),
     MultiSelectItem("physics", "Physics"),
@@ -30,25 +33,24 @@ class _SignUpState extends State<SignUp> {
       _last_name = "",
       _email = "",
       _password = "",
-      _password_conf = "";
+      _password_conf = "",
+  bio = "";
 
   Future signUpUser() async {
     try {
       if (confirmPassword()) {
-        await _auth.createUserWithEmailAndPassword(
-            email: _email!, password: _password!);
-
-        Map<String, dynamic> info = {
-          'first name': _first_name!,
-          'last_name': _last_name!,
-          'email': _email!
-        };
-        if (!isStudent) {
-          info.addAll({'role': 'tutor', 'subjects': _selectedSubjects});
-        } else {
-          info.addAll({'role': 'student'});
-        }
-        await FirebaseFirestore.instance.collection('users').add(info);
+        UserDB newUser = UserDB(
+          uid: '',
+          firstName: _first_name!,
+          lastName: _last_name!,
+          email: _email!,
+          bio: bio,
+          isTutor: !isStudent,
+          subjects: _selectedSubjects!,
+        );
+        authService.signUpUser(newUser, _password!);
+        String route = isStudent ? '/student' : '/tutor';
+        Navigator.pushReplacementNamed(context, route);
       }
     } catch (e) {
       setState(() {

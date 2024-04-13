@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:final_project/pages/AuthService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +13,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  AuthService authService = AuthService();
   String error = "";
   String? _email, _password;
   bool _keepLoggedIn = false;
@@ -18,9 +21,8 @@ class _LoginState extends State<Login> {
 
   Future login() async {
     try {
-      UserCredential user = await _auth.signInWithEmailAndPassword(
-          email: _email!, password: _password!);
-      String route = '/home${isStudent ? '/student' : '/tutor'}';
+      await authService.loginUser(_email!, _password!);
+      String route = isStudent ? '/student' : '/tutor';
       Navigator.pushReplacementNamed(context, route);
     } catch (e) {
       setState(() {
@@ -31,12 +33,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    if (_auth.currentUser != null) {
-      print("Already signed in.");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacementNamed(context, '/home');
-      });
-    }
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
@@ -186,7 +182,11 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                     ),
-                    Center(child: Text(error, style: TextStyle(color: Colors.red),)),
+                    Center(
+                        child: Text(
+                      error,
+                      style: TextStyle(color: Colors.red),
+                    )),
                     const SizedBox(height: 20.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
