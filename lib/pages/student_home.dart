@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'NavigationBar.dart';
 
 class StudentHome extends StatefulWidget {
   const StudentHome({super.key});
@@ -11,22 +12,21 @@ class StudentHome extends StatefulWidget {
 class _StudentHomeState extends State<StudentHome> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Example list of subjects, replace with your actual data
+  int _selectedSubjectIndex = 0; // Independent index for subject list
+  int _selectedBottomNavIndex = 0; // Independent index for bottom navigation
+
   final List<Map<String, dynamic>> subjects = [
     {
-      'title': 'Maths',
-      'color': Colors.orange,
-      'icon': Icons.calculate, // replace with your own icons
+      'title': 'Biology',
+      'icon': Icons.local_florist,
     },
     {
-      'title': 'Science',
-      'color': Colors.lightBlue,
-      'icon': Icons.science, // replace with your own icons
+      'title': 'Physics',
+      'icon': Icons.scatter_plot,
     },
     {
-      'title': 'English',
-      'color': Colors.purple,
-      'icon': Icons.menu_book, // replace with your own icons
+      'title': 'Chemistry',
+      'icon': Icons.science,
     },
     // Add more subjects as needed
   ];
@@ -40,18 +40,39 @@ class _StudentHomeState extends State<StudentHome> {
     }
   }
 
-  Widget buildSubjectCard(Map<String, dynamic> subject) {
-    return Card(
-      color: subject['color'],
+  Widget buildSubjectCard(int index) {
+    var subject = subjects[index];
+    bool isSelected = _selectedSubjectIndex == index;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedSubjectIndex = index;
+        });
+      },
       child: Container(
-        width: 120,
-        padding: EdgeInsets.all(8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        margin: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.shade50 : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [
+            BoxShadow(
+                color: Colors.blue.shade100, spreadRadius: 3, blurRadius: 5)
+          ]
+              : [],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(subject['icon'], size: 40),
-            SizedBox(height: 10),
-            Text(subject['title']),
+            Icon(subject['icon'], size: 24,
+                color: isSelected ? Colors.blue : Colors.grey),
+            SizedBox(width: 8),
+            Text(
+              subject['title'],
+              style: TextStyle(color: isSelected ? Colors.blue : Colors.grey),
+            ),
           ],
         ),
       ),
@@ -66,80 +87,34 @@ class _StudentHomeState extends State<StudentHome> {
       });
     }
 
-    return DefaultTabController(
-      length: 3, // Number of tabs
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Student Home Page!",
-            style: TextStyle(color: Colors.white),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+            "Student Home Page!", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue,
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Action for "See all"
+            },
+            child: Text('See all', style: TextStyle(color: Colors.white)),
           ),
-          backgroundColor: Colors.blue,
-          bottom: TabBar(
-            tabs: [
-              Tab(text: 'All'),
-              Tab(icon: Icon(Icons.near_me), text: 'Nearby'),
-              Tab(icon: Icon(Icons.star), text: 'Popular'),
-            ],
-          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+              subjects.length, (index) => buildSubjectCard(index)),
         ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              UserAccountsDrawerHeader(
-                accountName: Text(_auth.currentUser?.displayName ?? 'Student Name'),
-                accountEmail: Text(_auth.currentUser?.email ?? 'student@example.com'),
-                currentAccountPicture: CircleAvatar(
-                  backgroundImage: _auth.currentUser?.photoURL != null
-                      ? NetworkImage(_auth.currentUser!.photoURL!)
-                      : AssetImage('assets/default_image.png') as ImageProvider,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout'),
-                onTap: signOut,
-              ),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            Column(
-              children: [
-                SizedBox(
-                  height: 120, // Adjust the height to fit your design
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: subjects.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: buildSubjectCard(subjects[index]),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: Center(child: Text('')),
-                ),
-              ],
-            ),
-            Center(child: Text('Nearby Tab Content')),
-            Center(child: Text('Popular Tab Content')),
-          ],
-        ),
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        selectedIndex: _selectedBottomNavIndex,
+        onItemSelected: (index) {
+          setState(() {
+            _selectedBottomNavIndex = index;
+          });
+        },
       ),
     );
   }
