@@ -68,7 +68,7 @@ class AuthService {
   Future<String?> getDocumentIdByUid(String userId) async {
     try {
       var querySnapshot = await _firestore.collection('users')
-          .where('id', isEqualTo: userId)
+          .where('uid', isEqualTo: userId)
           .limit(1)
           .get();
 

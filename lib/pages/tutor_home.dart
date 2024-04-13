@@ -74,33 +74,45 @@ class _State extends State<TutorHome> {
         child: CircularProgressIndicator(),
       );
     }
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          "Welcome ${user['first name']}!",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.blue,
-        actions: [
-          ElevatedButton(
-              onPressed: () => {
-              Navigator.pushNamed(context, '/profile', arguments: {'userId': _auth.currentUser!.uid, 'docId': docId})
-          },
-              child: const Text(
-                "View Profile",
-                style: TextStyle(color: Colors.blue),
-              )),
-          const SizedBox(
-            width: 10,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text(
+            "Welcome ${user['first name']}!",
+            style: TextStyle(color: Colors.white),
           ),
-          ElevatedButton(
-              onPressed: () => {signOut()},
-              child: const Text(
-                "Sign Out",
-                style: TextStyle(color: Colors.blue),
-              ))
-        ],
+          bottom: TabBar(
+            tabs: [
+              Tab(
+                text: 'All',
+
+              ),
+              Tab(text: 'My Reviews',)
+            ],
+          ),
+          backgroundColor: Colors.blue,
+          actions: [
+            ElevatedButton(
+                onPressed: () => {
+                Navigator.pushNamed(context, '/profile', arguments: {'userId': _auth.currentUser!.uid, 'docId': docId})
+            },
+                child: const Text(
+                  "View Profile",
+                  style: TextStyle(color: Colors.blue),
+                )),
+            const SizedBox(
+              width: 10,
+            ),
+            ElevatedButton(
+                onPressed: () => {signOut()},
+                child: const Text(
+                  "Sign Out",
+                  style: TextStyle(color: Colors.blue),
+                ))
+          ],
+        ),
       ),
     );
   }

@@ -34,7 +34,7 @@ class _SignUpState extends State<SignUp> {
       _email = "",
       _password = "",
       _password_conf = "",
-  bio = "";
+      _bio = "";
 
   Future signUpUser() async {
     try {
@@ -44,7 +44,7 @@ class _SignUpState extends State<SignUp> {
           firstName: _first_name!,
           lastName: _last_name!,
           email: _email!,
-          bio: bio,
+          bio: _bio,
           isTutor: !isStudent,
           subjects: _selectedSubjects!,
         );
@@ -222,6 +222,7 @@ class _SignUpState extends State<SignUp> {
                           ),
                           const SizedBox(height: 20),
                           TextFormField(
+                            obscureText: true,
                             style: const TextStyle(color: Colors.white),
                             validator: (input) => input == null || input.isEmpty
                                 ? 'Password must at least 6 characters'
@@ -243,12 +244,31 @@ class _SignUpState extends State<SignUp> {
                           ),
                           const SizedBox(height: 20),
                           TextFormField(
+                            obscureText: true,
                             style: const TextStyle(color: Colors.white),
                             onSaved: (input) => _password_conf = input,
                             decoration: const InputDecoration(
                               labelText: 'Confirm Password',
                               labelStyle: TextStyle(color: Colors.white),
                               prefixIcon: Icon(Icons.lock_outline,
+                                  color: Colors
+                                      .white), // Changed to person_outline icon
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            style: const TextStyle(color: Colors.white),
+                            onSaved: (input) => _bio = input,
+                            decoration: const InputDecoration(
+                              labelText: 'Bio',
+                              labelStyle: TextStyle(color: Colors.white),
+                              prefixIcon: Icon(Icons.person_2,
                                   color: Colors
                                       .white), // Changed to person_outline icon
                               enabledBorder: OutlineInputBorder(

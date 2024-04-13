@@ -55,6 +55,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Final Project',
       initialRoute: '/',
       onGenerateRoute: generateRoute,
