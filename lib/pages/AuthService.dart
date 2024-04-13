@@ -24,7 +24,7 @@ class AuthService {
     User? user = _auth.currentUser;
     if (user != null) {
       try {
-        await user.updateEmail(newEmail);
+        await user.verifyBeforeUpdateEmail(newEmail);
         await _firestore.collection('users').doc(user.uid).update({
           'email': newEmail,
         });
