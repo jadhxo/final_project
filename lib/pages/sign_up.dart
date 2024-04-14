@@ -81,7 +81,7 @@ class _SignUpState extends State<SignUp> {
         for (var doc in subjectSnapshot.docs) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
           String subjectName = data['display name']; // Assuming the field is named 'name'
-          _items.add(MultiSelectItem(doc.id, subjectName));
+          _items.add(MultiSelectItem(subjectName, subjectName));
         }
       });
     } catch (e) {

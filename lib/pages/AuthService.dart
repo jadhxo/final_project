@@ -12,9 +12,15 @@ class AuthService {
     await _firestore.collection('users').doc(user.uid).set(user.toMap());
   }
 
-  Future<void> loginUser(String email, String password) async {
+  Future<void> loginUser(String email, String password, String role) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential user = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      DocumentSnapshot userDB = await _firestore.collection('users').doc(user.user?.uid).get();
+      Map<String, dynamic> userInfo = userDB.data() as Map<String, dynamic>;
+      if (userInfo['role'] != role) {
+        _auth.signOut();
+        throw Exception("No user for this role");
+      }
     } catch (e) {
       rethrow;
     }

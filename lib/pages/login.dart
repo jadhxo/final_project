@@ -21,7 +21,8 @@ class _LoginState extends State<Login> {
 
   Future login() async {
     try {
-      await authService.loginUser(_email!, _password!);
+      String role = isStudent ? 'student' : 'tutor';
+      await authService.loginUser(_email!, _password!, role);
       String route = isStudent ? '/student' : '/tutor';
       Navigator.pushReplacementNamed(context, route);
     } catch (e) {
