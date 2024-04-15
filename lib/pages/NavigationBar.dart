@@ -128,6 +128,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   void _showNotifications(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Notifications"),
@@ -172,7 +173,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
           ],
         );
       },
-    );
+    ).then((value) => {
+      markAllNotificationsAsRead()
+    });
   }
 
   Widget buildNotificationItem(Map<String, dynamic> notification) {

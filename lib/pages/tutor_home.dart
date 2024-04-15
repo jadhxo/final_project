@@ -90,7 +90,6 @@ class _State extends State<TutorHome> {
         subjects.clear();
         for (var doc in subjectSnapshot.docs) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          print(data);
           String subjectName = data['display name'];
           int iconCode = int.parse(data['icon'].substring(2), radix: 16);
           IconData iconData = IconData(iconCode, fontFamily: 'MaterialIcons');
@@ -99,9 +98,7 @@ class _State extends State<TutorHome> {
             'title': subjectName,
             'icon': iconData, // Use IconData instead of a file path
           });
-          print(subjects);
         }
-        print(subjects);
       });
     } catch (e) {
       print(e);
