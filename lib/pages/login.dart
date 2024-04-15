@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:final_project/pages/AuthService.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -52,183 +53,194 @@ class _LoginState extends State<Login> {
           SingleChildScrollView(
             child: Form(
               key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(30.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      alignment: Alignment.center,
-                      margin: EdgeInsets.only(
-                          top: MediaQuery.of(context).size.height * 0.1),
-                      child: Column(
-                        children: [
-                          Image.asset(
-                            'assets/logo.png',
-                            height: 100.0,
-                          ),
-                          const Text(
-                            'Login',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.bold,
+              child: RawKeyboardListener (
+                focusNode: FocusNode(),
+                onKey: (event) => {
+                  if (event.logicalKey == LogicalKeyboardKey.enter) {
+                    setState(() {
+                      _formKey.currentState?.save();
+                      login();
+                    })
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        alignment: Alignment.center,
+                        margin: EdgeInsets.only(
+                            top: MediaQuery.of(context).size.height * 0.1),
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/logo.png',
+                              height: 100.0,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.center,
-                      margin: const EdgeInsets.only(top: 20.0),
-                      child: ToggleButtons(
-                        borderColor: Colors.white,
-                        fillColor: Colors.blue,
-                        borderWidth: 2,
-                        selectedBorderColor: Colors.white,
-                        selectedColor: Colors.white,
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(30),
-                        onPressed: (int index) {
-                          setState(() {
-                            isStudent = index == 0;
-                          });
-                        },
-                        isSelected: [isStudent, !isStudent],
-                        children: const <Widget>[
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child:
-                                Text('Student', style: TextStyle(fontSize: 16)),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child:
-                                Text('Tutor', style: TextStyle(fontSize: 16)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 40.0),
-                    TextFormField(
-                      style: const TextStyle(color: Colors.white),
-                      validator: (input) => input == null || input.isEmpty
-                          ? 'Please type an email'
-                          : null,
-                      onSaved: (input) => _email = input,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        labelStyle: TextStyle(color: Colors.white),
-                        prefixIcon: Icon(Icons.email, color: Colors.white),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
+                            const Text(
+                              'Login',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      style: const TextStyle(color: Colors.white),
-                      validator: (input) => input == null || input.length < 6
-                          ? 'Password must be at least 6 characters'
-                          : null,
-                      onSaved: (input) => _password = input,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        labelStyle: TextStyle(color: Colors.white),
-                        prefixIcon: Icon(Icons.lock, color: Colors.white),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                      ),
-                      obscureText: true,
-                    ),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _keepLoggedIn,
-                          onChanged: (bool? value) {
+                      Container(
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.only(top: 20.0),
+                        child: ToggleButtons(
+                          borderColor: Colors.white,
+                          fillColor: Colors.blue,
+                          borderWidth: 2,
+                          selectedBorderColor: Colors.white,
+                          selectedColor: Colors.white,
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(30),
+                          onPressed: (int index) {
                             setState(() {
-                              _keepLoggedIn = value ?? false;
+                              isStudent = index == 0;
                             });
                           },
-                          checkColor: Colors.white,
-                          activeColor: Colors.blue,
-                        ),
-                        const Text(
-                          'Keep me logged in',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20.0),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            login();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(color: Colors.white),
+                          isSelected: [isStudent, !isStudent],
+                          children: const <Widget>[
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 32),
+                              child:
+                                  Text('Student', style: TextStyle(fontSize: 16)),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 32),
+                              child:
+                                  Text('Tutor', style: TextStyle(fontSize: 16)),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Center(
-                        child: Text(
-                      error,
-                      style: TextStyle(color: Colors.red),
-                    )),
-                    const SizedBox(height: 20.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            // TODO: Implement Forgot Password Functionality
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      const SizedBox(height: 40.0),
+                      TextFormField(
+                        style: const TextStyle(color: Colors.white),
+                        validator: (input) => input == null || input.isEmpty
+                            ? 'Please type an email'
+                            : null,
+                        onSaved: (input) => _email = input,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: TextStyle(color: Colors.white),
+                          prefixIcon: Icon(Icons.email, color: Colors.white),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
                           ),
-                          child: const Text(
-                            'Forgot password',
-                            style: TextStyle(
-                              color: Colors.white,
-                              decoration: TextDecoration.underline,
-                            ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
                           ),
                         ),
-                        const Text(' | ',
-                            style: TextStyle(color: Colors.white)),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/signup');
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      const SizedBox(height: 20.0),
+                      TextFormField(
+                        style: const TextStyle(color: Colors.white),
+                        validator: (input) => input == null || input.length < 6
+                            ? 'Password must be at least 6 characters'
+                            : null,
+                        onSaved: (input) => _password = input,
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: TextStyle(color: Colors.white),
+                          prefixIcon: Icon(Icons.lock, color: Colors.white),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
                           ),
-                          child: const Text(
-                            'Create Account',
-                            style: TextStyle(
-                              color: Colors.white,
-                              decoration: TextDecoration.underline,
-                            ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                        obscureText: true,
+                      ),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _keepLoggedIn,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _keepLoggedIn = value ?? false;
+                              });
+                            },
+                            checkColor: Colors.white,
+                            activeColor: Colors.blue,
+                          ),
+                          const Text(
+                            'Keep me logged in',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20.0),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _formKey.currentState!.save();
+                              login();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue),
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Center(
+                          child: Text(
+                        error,
+                        style: TextStyle(color: Colors.red),
+                      )),
+                      const SizedBox(height: 20.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              // TODO: Implement Forgot Password Functionality
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Forgot password',
+                              style: TextStyle(
+                                color: Colors.white,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                          const Text(' | ',
+                              style: TextStyle(color: Colors.white)),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/signup');
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Create Account',
+                              style: TextStyle(
+                                color: Colors.white,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

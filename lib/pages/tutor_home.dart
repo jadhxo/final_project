@@ -24,14 +24,6 @@ class _State extends State<TutorHome> {
   final List<Map<String, dynamic>> subjects = [];
   AuthService authService = AuthService();
   StreamSubscription<DocumentSnapshot>? _userSubscription;
-  signOut() {
-    try {
-      _auth.signOut();
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (e) {
-      print(e);
-    }
-  }
 
   Widget buildSubjectCard(int index) {
     var subject = subjects[index];
@@ -152,35 +144,20 @@ class _State extends State<TutorHome> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue,
-        actions: [
-          ElevatedButton(
-              onPressed: () => {
-              Navigator.pushNamed(context, '/profile', arguments: {'userId': _auth.currentUser!.uid, 'docId': docId})
-          },
-              child: const Text(
-                "View Profile",
-                style: TextStyle(color: Colors.blue),
-              )),
-          const SizedBox(
-            width: 10,
-          ),
-          ElevatedButton(
-              onPressed: () => {signOut()},
-              child: const Text(
-                "Sign Out",
-                style: TextStyle(color: Colors.blue),
-              ))
-        ],
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Container(
-          constraints: BoxConstraints(maxWidth: 600),
-          child: Wrap(
-            direction: Axis.horizontal,
-            children: List.generate(
-                subjects.length, (index) => buildSubjectCard(index)),
-          ),
+        child: Column(
+          children: [
+            Container(
+              constraints: BoxConstraints(maxWidth: 600),
+              child: Wrap(
+                direction: Axis.horizontal,
+                children: List.generate(
+                    subjects.length, (index) => buildSubjectCard(index)),
+              ),
+            ),
+          ],
         ),
       ),
         bottomNavigationBar: CustomBottomNavigationBar(

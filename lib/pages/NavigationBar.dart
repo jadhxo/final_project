@@ -30,13 +30,14 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     Icons.person_2_outlined,
   ];
 
-  List<Map<String, dynamic>> notifications = [];
+  Stream<List<Map<String, dynamic>>>? notificationsStream;
 
   @override
   void initState() {
     super.initState();
-  fetchNotifications();
+    notificationsStream = streamNotifications();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,130 +55,118 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index){
+  Widget _buildNavItem(IconData icon, int index) {
     Color iconColor = widget.selectedIndex == index ? Colors.lightBlue : Colors.grey;
-
-    // Count unread notifications
-    int unreadCount = notifications.where((notification) => !notification['read']).length;
 
     return IconButton(
       icon: Stack(
-        clipBehavior: Clip.none, // Allow overflow for the badge
+        clipBehavior: Clip.none, // Allow overflow for badge
         children: [
-          Icon(icon, color: iconColor),
-          if (index == 2 && unreadCount > 0) // Check if the item is the notification icon and there are unread notifications
+          Icon(icon, color: iconColor), // Main icon
+          if (index == 2) // Assuming notifications icon is at index 2
             Positioned(
-              right: -3, // Adjust the position as needed
+              right: -6,
               top: -3,
-              child: Container(
-                padding: EdgeInsets.all(1),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                constraints: BoxConstraints(
-                  minWidth: 12,
-                  minHeight: 12,
-                ),
-                child: Text(
-                  '$unreadCount',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 8,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+              child: StreamBuilder<int>(
+                stream: streamUnreadNotificationCount(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data! > 0) {
+                    return Container(
+                      padding: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '${snapshot.data}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  } else {
+                    return SizedBox(); // No badge if no unread notifications
+                  }
+                },
               ),
             ),
         ],
       ),
-      onPressed: () async {
-        if (index == 3) {
-          var docId = await authService.getDocumentIdByUid(_auth.currentUser!.uid);
-          Navigator.of(context).pushNamed('/profile', arguments: {'userId': _auth.currentUser!.uid, 'docId': docId});
-        } else if (index == 2) {
+      onPressed: () {
+        if(index == 2) {
           _showNotifications(context);
-        } else {
           widget.onItemSelected(index);
+        } else if (index == 3) {
+          Navigator.pushNamed(context, '/profile', arguments: {'userId': _auth.currentUser?.uid});
         }
+        widget.onItemSelected(index);
+
       },
     );
   }
 
 
+  String formatDuration(DateTime notificationTime) {
+    Duration difference = DateTime.now().difference(notificationTime);
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes} min ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hr ago';
+    } else {
+      return '${difference.inDays} days ago';
+    }
+  }
+
   void _showNotifications(BuildContext context) {
-    markAllNotificationsAsRead();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Notifications"),
-          content: ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List<Widget>.generate(
-                    notifications.length,
-                    (index) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 16.0),
-                        color: index % 2 == 0 ? Colors.white : Colors.grey[100],
-                        child: Row(
-                          children: [
-                            Stack(children: [
-                              const Icon(Icons.notifications,
-                                  color: Colors.black54),
-                              if (!notifications[index]['read'])
-                                Positioned(
-                                  right: 4,
-                                  top: 4,
-                                  child: Container(
-                                    width: 5.0,
-                                    height: 5.0,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                            ]),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Expanded(
-                              child: Text(
-                                notifications[index]['text'],
-                                style: const TextStyle(color: Colors.black87),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+          content: StreamBuilder<List<Map<String, dynamic>>>(
+            stream: notificationsStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData) {
+                return Text("No notifications yet.");
+              }
+              var notifications = snapshot.data!;
+              return ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List<Widget>.generate(
+                        notifications.length,
+                            (index) {
+                          return buildNotificationItem(notifications[index]);
+                        },
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
           actions: <Widget>[
             TextButton(
               child: const Text('Close', style: TextStyle(color: Colors.blue)),
               onPressed: () {
                 Navigator.of(context).pop();
-                setState(() {
-                  notifications = notifications.map((notification) {
-                    return {
-                      ...notification,
-                      'read': true
-                    };
-                  }).toList();
-                });
+                markAllNotificationsAsRead();
               },
             ),
           ],
@@ -186,23 +175,69 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     );
   }
 
-  Future fetchNotifications() async {
-    try {
-      var userDoc = await firestore.collection('users').doc(_auth.currentUser?.uid);
-      var notifications = await userDoc.collection('notifications').get();
-      List<Map<String, dynamic>> fetchedNotifications = [];
-      for (var doc in notifications.docs) {
-        fetchedNotifications.add({'text': doc.data()['text'], 'read': doc.data()['read']});
-      }
-      if (mounted) {
-        setState(() {
-          this.notifications = fetchedNotifications;
-        });
-      }
-    } catch(e) {
-
-    }
+  Widget buildNotificationItem(Map<String, dynamic> notification) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      color: notification['read'] ? Colors.grey[100] : Colors.white,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.notifications, color: Colors.black54),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notification['text'],
+                  style: TextStyle(color: Colors.black87),
+                  softWrap: true,
+                ),
+                Text(
+                  formatDuration(notification['timestamp']),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
+
+
+  Stream<List<Map<String, dynamic>>> streamNotifications() {
+    return firestore
+        .collection('users')
+        .doc(_auth.currentUser?.uid)
+        .collection('notifications')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return {
+          'text': doc.data()['text'] as String,
+          'read': doc.data()['read'] as bool,
+          'timestamp': (doc.data()['timestamp'] as Timestamp).toDate(),
+        };
+      }).toList();
+    });
+  }
+
+  Stream<int> streamUnreadNotificationCount() {
+    return firestore
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .collection('notifications')
+        .where('read', isEqualTo: false) // Only get unread notifications
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length); // Map to the count of unread notifications
+  }
+
 
   Future<void> markAllNotificationsAsRead() async {
     var collectionRef = firestore.collection('users').doc(_auth.currentUser?.uid).collection('notifications');

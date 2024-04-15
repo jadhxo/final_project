@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:final_project/pages/AuthService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Profile extends StatefulWidget {
-  final String userId, docId;
-  Profile({Key? key, required this.userId, required this.docId}) : super(key: key);
+  final String userId;
+  Profile({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -14,7 +15,17 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
 
   String subjects = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   AuthService authService = AuthService();
+
+  signOut() {
+    try {
+      _auth.signOut();
+      Navigator.pushReplacementNamed(context, '/login');
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +38,7 @@ class _ProfileState extends State<Profile> {
         elevation: 0,
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: authService.getUserStream(widget.docId),
+        stream: authService.getUserStream(widget.userId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -106,11 +117,26 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/edit', arguments: user);
-                  },
-                  child: const Text('Edit Profile'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/edit', arguments: user);
+                      },
+                      child: const Text('Edit Profile'),
+                    ),
+                    SizedBox(width: 24,),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red
+                      ),
+                      onPressed: () {
+                        signOut();
+                      },
+                      child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
                 ),
               ],
             ),

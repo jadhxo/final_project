@@ -14,23 +14,35 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late TextEditingController _first_nameController;
   late TextEditingController _last_nameController;
   late TextEditingController _bioController;
 
   AuthService authService = AuthService();
   List<String> _selectedSubjects = [];
-  final List<MultiSelectItem<String>> _items = [
-    MultiSelectItem("math", "Mathematics"),
-    MultiSelectItem("physics", "Physics"),
-    MultiSelectItem("chemistry", "Chemistry"),
-    MultiSelectItem("biology", "Biology"),
-    // Add more subjects as needed
-  ];
+  List<MultiSelectItem<String>> _items = [];
+
+  Future<void> fetchSubjects() async {
+    try {
+      QuerySnapshot subjectSnapshot = await _firestore.collection('subjects').get();
+      setState(() {
+        _items.clear();
+        for (var doc in subjectSnapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          String subjectName = data['display name']; // Assuming the field is named 'name'
+          _items.add(MultiSelectItem(subjectName, subjectName));
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchSubjects();
     _first_nameController =
         TextEditingController(text: '${widget.user['first name']}');
     _last_nameController =
@@ -146,9 +158,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 const SizedBox(height: 20),
                 if (widget.user['role'] == 'tutor') MultiSelectDialogField(
                   items: _items,
-                  initialValue: _selectedSubjects,
                   title: const Text("Subjects"),
                   selectedColor: Colors.blue,
+                  initialValue: _selectedSubjects,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(4)),
                     border: Border.all(
@@ -176,12 +188,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
                 ElevatedButton(
                   onPressed: _updateProfile,
-                  child: const Text('Save Changes',
-                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors
                         .blue, // Deprecated, use `backgroundColor` instead
                   ),
+                  child: const Text('Save Changes',
+                    style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

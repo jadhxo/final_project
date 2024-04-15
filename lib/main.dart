@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         final args = settings.arguments as Map<String, dynamic>?; // Safely handle arguments
         if (args != null && args.containsKey('userId')) {
           return MaterialPageRoute(
-            builder: (_) => Profile(userId: args['userId'], docId: args['docId']),
+            builder: (_) => Profile(userId: args['userId']),
           );
         } else {
           return MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('User ID not provided'))));
