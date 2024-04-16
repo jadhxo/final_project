@@ -21,7 +21,6 @@ class _StudentHomeState extends State<StudentHome> {
   var user;
   var initTutors = false;
   String? docId;
-  StreamSubscription<DocumentSnapshot>? _userSubscription;
   int _selectedSubjectIndex = 0;
   int _selectedBottomNavIndex = 0;
   List<Map<String, dynamic>> subjects = [];
@@ -43,7 +42,7 @@ class _StudentHomeState extends State<StudentHome> {
 
   @override
   Widget build(BuildContext context) {
-    print(tutors);
+    print(user);
     if (_auth.currentUser == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/login');
@@ -62,20 +61,21 @@ class _StudentHomeState extends State<StudentHome> {
         automaticallyImplyLeading: false,
         title: Text(
           "Welcome ${user?['first name']}!",
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
         child: Container(
-          constraints: BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 600),
           child: Column(
             children: [
               Wrap(
                 direction: Axis.horizontal,
-                children: List.generate(subjects.length, buildSubjectCard),
+                children:
+                  List.generate(subjects.length, buildSubjectCard)
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               GridView.builder(
                 shrinkWrap: true,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -105,22 +105,8 @@ class _StudentHomeState extends State<StudentHome> {
   }
 
   void fetchUser() async {
-    final user = _auth.currentUser;
-    if (user != null) {
-      docId = await authService.getDocumentIdByUid(user.uid);
-      _userSubscription = authService.getUserStream(docId!).listen(
-        (snapshot) {
-          if (snapshot.exists) {
-            setState(() {
-              this.user = snapshot.data();
-            });
-          } else {
-            print("No user data available");
-          }
-        },
-        onError: (error) => print("Error listening to user updates: $error"),
-      );
-    }
+    DocumentSnapshot doc = await _firestore.collection('users').doc(_auth.currentUser?.uid).get();
+    user = doc.data();
   }
 
   Future<void> fetchTutors() async {
@@ -135,6 +121,7 @@ class _StudentHomeState extends State<StudentHome> {
     setState(() {
       tutors = fetchedTutors;
       filteredTutors = tutors;
+      initTutors = true;
     });
   }
 
@@ -142,7 +129,7 @@ class _StudentHomeState extends State<StudentHome> {
     try {
       QuerySnapshot subjectSnapshot =
           await _firestore.collection('subjects').get();
-      List<Map<String, dynamic>> fetchedSubjects = [];
+      List<Map<String, dynamic>> fetchedSubjects = [{'title': 'All', 'icon': IconData(int.parse('e5f9', radix: 16), fontFamily: 'MaterialIcons')}];
       for (var doc in subjectSnapshot.docs) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         String subjectName = data['display name'];
@@ -181,13 +168,15 @@ class _StudentHomeState extends State<StudentHome> {
     return GestureDetector(
       onTap: () {
         setState(() {
+          print("Selected");
           _selectedSubjectIndex = index;
+          print(index);
           filterTutorsBySubject(subjects[index]['title']);
         });
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12),
-        margin: EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.shade50 : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
@@ -205,7 +194,7 @@ class _StudentHomeState extends State<StudentHome> {
           children: <Widget>[
             Icon(subject['icon'],
                 size: 24, color: isSelected ? Colors.blue : Colors.grey),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               subject['title'],
               style: TextStyle(color: isSelected ? Colors.blue : Colors.grey),
@@ -218,7 +207,7 @@ class _StudentHomeState extends State<StudentHome> {
 
   Widget buildTutorCard(Map<String, dynamic> tutor) {
     return Card(
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -232,7 +221,7 @@ class _StudentHomeState extends State<StudentHome> {
           ),
           Text(
             "${tutor['first name']} ${tutor['last name']}",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(tutor['subjects'].join(', ') ?? 'No Specialization'),
           const SizedBox(
@@ -251,12 +240,19 @@ class _StudentHomeState extends State<StudentHome> {
   }
 
   void filterTutorsBySubject(String subject) {
+    if (subject == 'All') {
+      setState(() {
+        filteredTutors = tutors;
+      });
+      return;
+    }
     List<Map<String, dynamic>> currentTutors = [];
     for (Map<String, dynamic> tutor in tutors) {
       if (tutor['subjects'].contains(subject)) {
-        filteredTutors.add(tutor);
+        currentTutors.add(tutor);
       }
     }
+    print(filteredTutors);
     setState(() {
       filteredTutors = currentTutors;
     });
@@ -267,7 +263,7 @@ class _StudentHomeState extends State<StudentHome> {
     for (String subject in tutor['subjects']) {
       subjects.add(DropdownMenuItem(
         value: subject,
-        child: Text(subject, style: TextStyle(fontSize: 14)),
+        child: Text(subject, style: const TextStyle(fontSize: 14)),
       ));
     }
     showDialog(
@@ -282,7 +278,7 @@ class _StudentHomeState extends State<StudentHome> {
               builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
               title: const Text("Register"),
-              contentPadding: EdgeInsets.all(10),
+              contentPadding: const EdgeInsets.all(10),
               content: Container(
                 padding: const EdgeInsets.all(12),
                 child: SingleChildScrollView(
@@ -335,7 +331,7 @@ class _StudentHomeState extends State<StudentHome> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.timer),
+                            icon: const Icon(Icons.timer),
                             onPressed: () async {
                               final TimeOfDay? pickedTime =
                                   await showTimePicker(
@@ -422,18 +418,18 @@ class _StudentHomeState extends State<StudentHome> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmation'),
+          title: const Text('Confirmation'),
           content: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(succeeded ? Icons.check_circle : Icons.error, color: succeeded ? Colors.green : Colors.red),
-              SizedBox(width: 10),  // Space between icon and text
-              Text(succeeded ? "Successfully booked session!" : "Error occured while trying to book session."),
+              const SizedBox(width: 10),  // Space between icon and text
+              Text(succeeded ? "Successfully booked session!" : "Error occurred while trying to book session."),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
