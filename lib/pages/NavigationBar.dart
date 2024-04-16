@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:final_project/pages/AuthService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final int selectedIndex;
@@ -136,10 +137,10 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
             stream: notificationsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
               if (!snapshot.hasData) {
-                return Text("No notifications yet.");
+                return const Text("No notifications yet.");
               }
               var notifications = snapshot.data!;
               return ConstrainedBox(
@@ -185,15 +186,15 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.notifications, color: Colors.black54),
-          SizedBox(width: 10),
+          const Icon(Icons.notifications, color: Colors.black54),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   notification['text'],
-                  style: TextStyle(color: Colors.black87),
+                  style: const TextStyle(color: Colors.black87),
                   softWrap: true,
                 ),
                 Text(
@@ -210,8 +211,6 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       ),
     );
   }
-
-
 
   Stream<List<Map<String, dynamic>>> streamNotifications() {
     return firestore

@@ -109,10 +109,9 @@ class _ProfileState extends State<Profile> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 16),
+                      if (user['role'] == 'tutor') const SizedBox(height: 16),
                       const Text("Bio", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
                       Text("${user['bio']}", style: const TextStyle(fontSize: 16, color: Colors.black54)),
-                      // Add more profile details here
                     ],
                   ),
                 ),
