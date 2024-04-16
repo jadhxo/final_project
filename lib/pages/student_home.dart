@@ -4,7 +4,9 @@ import 'package:final_project/pages/AuthService.dart';
 import 'package:final_project/pages/DBService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'NavigationBar.dart'; // Assuming this is the path to your custom navigation bar file
+import 'package:intl/intl.dart';
+import 'NavigationBar.dart';
+import 'SessionCard.dart';
 
 class StudentHome extends StatefulWidget {
   const StudentHome({Key? key}) : super(key: key);
@@ -26,6 +28,8 @@ class _StudentHomeState extends State<StudentHome> {
   List<Map<String, dynamic>> subjects = [];
   List<Map<String, dynamic>> tutors = [];
   List<Map<String, dynamic>> filteredTutors = [];
+  List<Map<String, dynamic>> sessions = [];
+  StreamSubscription? sessionsStreamSubscription;
 
   @override
   void initState() {
@@ -33,12 +37,36 @@ class _StudentHomeState extends State<StudentHome> {
     fetchUser();
     fetchSubjects();
     fetchTutors();
+    listenToSessions();
   }
 
-  @override
   void dispose() {
+    sessionsStreamSubscription?.cancel();
     super.dispose();
   }
+
+  void listenToSessions() {
+    String uid = _auth.currentUser!.uid;
+    sessionsStreamSubscription = _firestore.collection('users').doc(uid).collection('sessions')
+        .snapshots()
+        .listen((QuerySnapshot snapshot) {
+      List<Map<String, dynamic>> updatedSessions = [];
+      print(snapshot.docs);
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        updatedSessions.add(data);
+      }
+
+      if (mounted) {
+        setState(() {
+          sessions = updatedSessions;
+        });
+      }
+    }, onError: (error) {
+      print("Error listening to session updates: $error");
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,34 +93,7 @@ class _StudentHomeState extends State<StudentHome> {
         ),
         backgroundColor: Colors.blue,
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Column(
-            children: [
-              Wrap(
-                direction: Axis.horizontal,
-                children:
-                  List.generate(subjects.length, buildSubjectCard)
-              ),
-              const SizedBox(height: 20),
-              GridView.builder(
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.0,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: filteredTutors.length,
-                itemBuilder: (context, index) {
-                  return buildTutorCard(filteredTutors[index]);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: _selectedBottomNavIndex == 1 ? calendarBody() : homeBody(),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedBottomNavIndex,
         onItemSelected: (index) {
@@ -103,6 +104,85 @@ class _StudentHomeState extends State<StudentHome> {
       ),
     );
   }
+
+  Widget homeBody() {
+    return SingleChildScrollView(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Column(
+          children: [
+            Wrap(
+                direction: Axis.horizontal,
+                children:
+                List.generate(subjects.length, buildSubjectCard)
+            ),
+            const SizedBox(height: 20),
+            GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.0,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: filteredTutors.length,
+              itemBuilder: (context, index) {
+                return buildTutorCard(filteredTutors[index]);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget calendarBody() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Center(
+            child: Text(
+              "Upcoming Sessions",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 16),
+          sessions.isNotEmpty
+              ? Expanded(
+            child: ListView.builder(
+              itemCount: sessions.length,
+              itemBuilder: (context, index) {
+                final session = sessions[index];
+                final subject = session['subject'] as String;
+                final tutorName = session['tutorName'] as String;
+                final date = DateFormat.yMMMd().add_jm().format(
+                    DateTime.fromMillisecondsSinceEpoch(
+                        (session['date'] as Timestamp).millisecondsSinceEpoch
+                    )
+                );
+
+                return SessionCard(
+                    subject: subject,
+                    name: tutorName,
+                    date: date,
+                    role: 'student'
+                );
+              },
+            ),
+          )
+              : const Center(
+            child: Text(
+              "No upcoming sessions.",
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   void fetchUser() async {
     DocumentSnapshot doc = await _firestore.collection('users').doc(_auth.currentUser?.uid).get();
@@ -307,8 +387,8 @@ class _StudentHomeState extends State<StudentHome> {
                               final DateTime? pickedDate = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2100),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime(2029),
                               );
                               if (pickedDate != null &&
                                   pickedDate != selectedDate) {
@@ -423,7 +503,7 @@ class _StudentHomeState extends State<StudentHome> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(succeeded ? Icons.check_circle : Icons.error, color: succeeded ? Colors.green : Colors.red),
-              const SizedBox(width: 10),  // Space between icon and text
+              const SizedBox(width: 10),
               Text(succeeded ? "Successfully booked session!" : "Error occurred while trying to book session."),
             ],
           ),
@@ -440,4 +520,5 @@ class _StudentHomeState extends State<StudentHome> {
       },
     );
   }
+
 }

@@ -190,7 +190,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   onPressed: _updateProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors
-                        .blue, // Deprecated, use `backgroundColor` instead
+                        .blue,
                   ),
                   child: const Text('Save Changes',
                     style: TextStyle(color: Colors.white)),

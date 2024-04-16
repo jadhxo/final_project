@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       case '/tutor':
         return MaterialPageRoute(builder: (_) => const TutorHome());
       case '/profile':
-        final args = settings.arguments as Map<String, dynamic>?; // Safely handle arguments
+        final args = settings.arguments as Map<String, dynamic>?;
         if (args != null && args.containsKey('userId')) {
           return MaterialPageRoute(
             builder: (_) => Profile(userId: args['userId']),
@@ -42,12 +42,11 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('User ID not provided'))));
         }
       case '/edit':
-        final args = settings.arguments as Map<String, dynamic>?; // Safely handle arguments
+        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (_) => EditProfilePage(user: args ?? {}), // Pass arguments to EditProfilePage
+          builder: (_) => EditProfilePage(user: args ?? {}),
         );
       default:
-      // It's generally a good idea to handle undefined routes
         return MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('Page not found'))));
     }
   }

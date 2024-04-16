@@ -80,7 +80,7 @@ class _SignUpState extends State<SignUp> {
         _items.clear();
         for (var doc in subjectSnapshot.docs) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          String subjectName = data['display name']; // Assuming the field is named 'name'
+          String subjectName = data['display name'];
           _items.add(MultiSelectItem(subjectName, subjectName));
         }
       });
@@ -212,7 +212,7 @@ class _SignUpState extends State<SignUp> {
                                     labelStyle: TextStyle(color: Colors.white),
                                     prefixIcon: Icon(Icons.person_outline,
                                         color: Colors
-                                            .white), // Changed to person_outline icon
+                                            .white),
                                     enabledBorder: OutlineInputBorder(
                                       borderSide:
                                           BorderSide(color: Colors.white),
@@ -238,7 +238,7 @@ class _SignUpState extends State<SignUp> {
                               labelStyle: TextStyle(color: Colors.white),
                               prefixIcon: Icon(Icons.email,
                                   color: Colors
-                                      .white), // Changed to person_outline icon
+                                      .white),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.white),
                               ),
@@ -260,7 +260,7 @@ class _SignUpState extends State<SignUp> {
                               labelStyle: TextStyle(color: Colors.white),
                               prefixIcon: Icon(Icons.lock,
                                   color: Colors
-                                      .white), // Changed to person_outline icon
+                                      .white),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.white),
                               ),
@@ -279,7 +279,7 @@ class _SignUpState extends State<SignUp> {
                               labelStyle: TextStyle(color: Colors.white),
                               prefixIcon: Icon(Icons.lock_outline,
                                   color: Colors
-                                      .white), // Changed to person_outline icon
+                                      .white),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.white),
                               ),
@@ -297,7 +297,7 @@ class _SignUpState extends State<SignUp> {
                               labelStyle: TextStyle(color: Colors.white),
                               prefixIcon: Icon(Icons.person_2,
                                   color: Colors
-                                      .white), // Changed to person_outline icon
+                                      .white),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.white),
                               ),

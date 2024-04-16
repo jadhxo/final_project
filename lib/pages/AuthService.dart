@@ -41,7 +41,6 @@ class AuthService {
     }
   }
 
-  // In AuthService
   Future<Map<String, dynamic>> fetchUserByUid(String uid) async {
     try {
       String? id = await getDocumentIdByUid(uid);
@@ -58,13 +57,11 @@ class AuthService {
   }
 
 
-  // AuthService class modification
   Stream<DocumentSnapshot> getUserStream(String userId) {
     return _firestore.collection('users').doc(userId).snapshots();
   }
 
   Stream<List<DocumentSnapshot>> getUser(String userId) {
-    // This returns a stream of query snapshots
     return _firestore.collection('users')
         .where('uid', isEqualTo: userId)
         .snapshots()
@@ -85,7 +82,7 @@ class AuthService {
       }
     } catch (e) {
       print("Failed to fetch document ID: $e");
-      return null;  // Return null in case of any errors
+      return null;
     }
   }
 

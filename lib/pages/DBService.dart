@@ -53,4 +53,27 @@ class DBService {
     DateFormat formatter = DateFormat('MMMM d, y \'at\' h:mm a');
     return formatter.format(date);
   }
+
+  Future<List<Map<String, dynamic>>> fetchSessions(String uid) async {
+    try {
+      List<Map<String, dynamic>> sessions = [];
+      CollectionReference collection = firestore.collection('users').doc(uid).collection('sessions');
+      QuerySnapshot querySnapshot = await collection.get();
+      for (var doc in querySnapshot.docs) {
+        sessions.add(doc.data() as Map<String, dynamic>);
+      }
+
+      sessions.sort((a, b) {
+        Timestamp aTimestamp = a['date'] as Timestamp;
+        Timestamp bTimestamp = b['date'] as Timestamp;
+        return aTimestamp.compareTo(bTimestamp);
+      });
+
+      return sessions;
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
 }

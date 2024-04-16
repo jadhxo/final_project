@@ -23,12 +23,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   AuthService authService = AuthService();
+  String role = '';
 
-  final List<IconData> navIcons = [
-    Icons.home_outlined,
-    Icons.calendar_month_outlined,
-    Icons.notifications_active_outlined,
-    Icons.person_2_outlined,
+  List<IconData> navIcons = [
   ];
 
   Stream<List<Map<String, dynamic>>>? notificationsStream;
@@ -36,9 +33,22 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   @override
   void initState() {
     super.initState();
-    notificationsStream = streamNotifications();
+    initNavs();
   }
 
+  void initNavs() async {
+    var user = await AuthService().fetchUserByUid((_auth.currentUser?.uid)!);
+    notificationsStream = streamNotifications();
+    setState(() {
+      role = user['role'];
+      navIcons = user['role'] == 'student' ? [Icons.home_outlined,
+        Icons.calendar_month_outlined,
+        Icons.notifications_active_outlined,
+        Icons.person_2_outlined] : [Icons.home_outlined,
+        Icons.notifications_active_outlined,
+        Icons.person_2_outlined];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +71,10 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
 
     return IconButton(
       icon: Stack(
-        clipBehavior: Clip.none, // Allow overflow for badge
+        clipBehavior: Clip.none,
         children: [
-          Icon(icon, color: iconColor), // Main icon
-          if (index == 2) // Assuming notifications icon is at index 2
+          Icon(icon, color: iconColor),
+          if (index == 2 && role == 'student' || index == 1 && role == 'tutor') // Assuming notifications icon is at index 2
             Positioned(
               right: -6,
               top: -3,
@@ -78,13 +88,13 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      constraints: BoxConstraints(
+                      constraints: const BoxConstraints(
                         minWidth: 14,
                         minHeight: 14,
                       ),
                       child: Text(
                         '${snapshot.data}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 8,
                         ),
@@ -92,7 +102,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                       ),
                     );
                   } else {
-                    return SizedBox(); // No badge if no unread notifications
+                    return const SizedBox(); // No badge if no unread notifications
                   }
                 },
               ),
@@ -100,14 +110,13 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         ],
       ),
       onPressed: () {
-        if(index == 2) {
+        if(index == 2 && role == 'student' || index == 1 && role == 'tutor') {
           _showNotifications(context);
           widget.onItemSelected(index);
-        } else if (index == 3) {
+        } else if (index == 3 && role == 'student' || index == 2 && role == 'tutor') {
           Navigator.pushNamed(context, '/profile', arguments: {'userId': _auth.currentUser?.uid});
         }
         widget.onItemSelected(index);
-
       },
     );
   }
@@ -137,7 +146,12 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
             stream: notificationsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.2,
+                  ),
+                    child: const Center(child: CircularProgressIndicator())
+                );
               }
               if (!snapshot.hasData) {
                 return const Text("No notifications yet.");

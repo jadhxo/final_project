@@ -36,11 +36,9 @@ class _LoadingState extends State<Loading> {
         Navigator.pushReplacementNamed(context, route);
       } else {
         print("User not found in database");
-        // Optionally handle user not found, e.g., log out or redirect to a sign-up page
       }
     } catch (e) {
       print("Error fetching user data: $e");
-      // Handle errors, such as network issues
     }
   }
 

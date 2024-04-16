@@ -159,24 +159,6 @@ class _LoginState extends State<Login> {
                         ),
                         obscureText: true,
                       ),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _keepLoggedIn,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                _keepLoggedIn = value ?? false;
-                              });
-                            },
-                            checkColor: Colors.white,
-                            activeColor: Colors.blue,
-                          ),
-                          const Text(
-                            'Keep me logged in',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: 20.0),
                       Center(
                         child: ElevatedButton(
